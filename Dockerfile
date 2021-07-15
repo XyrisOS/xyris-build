@@ -1,7 +1,7 @@
 # Use Arch Linux since it works with Scuba
 FROM archlinux:base-devel
 # Packages necessary to build the cross compiler
-ARG REQ_PACKAGES="git wget gmp libmpc mpfr mtools nasm parted diffutils doxygen"
+ARG REQ_PACKAGES="git wget gmp libmpc mpfr mtools nasm parted diffutils doxygen grub"
 # Create pacman key
 RUN pacman-key --init
 # Update nobody to have sudo access
@@ -32,7 +32,7 @@ RUN	wget "https://ftp.gnu.org/pub/gnu/binutils/binutils-${BIN_VER}.tar.gz"
 RUN tar -xf binutils-${BIN_VER}.tar.gz
 RUN rm -rf binutils-${BIN_VER}.tar
 RUN mkdir build-binutils
-WORKDIR build-binutils
+WORKDIR /tmp/nobody/build-binutils
 RUN ../binutils-${BIN_VER}/configure --target=$TARGET --prefix="$PREFIX" --with-sysroot --disable-nls --disable-werror
 RUN make
 RUN make install
@@ -67,7 +67,7 @@ RUN make install-gdb
 # Build echfs tools
 WORKDIR /tmp/nobody/
 RUN	git clone https://github.com/echfs/echfs.git
-WORKDIR echfs
+WORKDIR /tmp/nobody/echfs
 RUN	make echfs-utils && make mkfs.echfs
 # Install echfs utilities
 USER root
