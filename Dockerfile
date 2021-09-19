@@ -1,7 +1,7 @@
 # Use Arch Linux since it works with Scuba
 FROM archlinux:base-devel
 # Packages necessary to build the cross compiler
-ARG REQ_PACKAGES="git wget gmp libmpc mpfr mtools nasm parted diffutils doxygen grub"
+ARG REQ_PACKAGES="git wget gmp libmpc mpfr mtools nasm parted diffutils doxygen graphviz xorriso qemu-arch-extra"
 # Create pacman key
 RUN pacman-key --init
 # Update nobody to have sudo access
