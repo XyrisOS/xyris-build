@@ -1,84 +1,56 @@
-# Use Arch Linux since it works with Scuba
-FROM archlinux:base-devel
+FROM alpine:3.14
 # Packages necessary to build the cross compiler
-ARG REQ_PACKAGES="git wget gmp libmpc mpfr mtools nasm parted diffutils doxygen grub"
-# Create pacman key
-RUN pacman-key --init
-# Update nobody to have sudo access
-RUN pacman -Sy --noconfirm ${REQ_PACKAGES} && passwd -d nobody && printf 'nobody ALL=(ALL) ALL\n' | tee -a /etc/sudoers
-# Install necessary packages
-# Do all of this in one run command so we can
-# minimize the package size
-RUN pacman -Syu --noconfirm ${TMP_PACKAGES}
-# Environment variables
-ENV PREFIX="/opt/cross"
-ENV TARGET=i686-elf
-ENV PATH="$PREFIX/bin:$PATH"
-ENV BIN_VER="2.36.1"
-ENV GCC_VER="11.1.0"
-ENV GDB_VER="10.2"
-# Enable multithreaded compilation
-ENV MAKEFLAGS="-j2"
-# Create directories
-RUN mkdir /tmp/nobody/
-RUN chown -R nobody /tmp/nobody/
-RUN mkdir ${PREFIX}
-RUN chown -R nobody ${PREFIX}
-# Build tasks as nobody user
-USER nobody
+ARG BUILD_PKGS="bison flex mpc1-dev gmp-dev mpfr-dev texinfo build-base util-linux-dev"
+# Packages necessary to build Xyris and docs
+ARG TOOLCHAIN_PKGS="make nasm scons doxygen graphviz"
+# Useful tools for debugging and image creation
+ARG OTHER_PKGS="git parted xorriso gdb-multiarch"
+# Install packages
+RUN apk update; \
+    apk add --no-cache ${BUILD_PKGS} ${TOOLCHAIN_PKGS} ${OTHER_PKGS}
+# Environment variables for cross compiler
+ENV BIN_VER="2.37"
+ENV GCC_VER="11.2.0"
+ENV CROSS_PREFIX="/opt/cross"
+ENV CROSS_TARGET="i686-elf"
+ENV CROSS_MAKEFLAGS="-j4"
+ENV PATH="$CROSS_PREFIX/bin:$PATH"
 # Build Binutils
-WORKDIR /tmp/nobody/
-RUN	wget "https://ftp.gnu.org/pub/gnu/binutils/binutils-${BIN_VER}.tar.gz"
-RUN tar -xf binutils-${BIN_VER}.tar.gz
-RUN rm -rf binutils-${BIN_VER}.tar
-RUN mkdir build-binutils
-WORKDIR /tmp/nobody/build-binutils
-RUN ../binutils-${BIN_VER}/configure --target=$TARGET --prefix="$PREFIX" --with-sysroot --disable-nls --disable-werror
-RUN make
-RUN make install
-WORKDIR /tmp/nobody
-RUN rm -rf build-binutils
-RUN rm -rf binutils-${BIN_VER}
+WORKDIR /tmp
+RUN export MAKEFLAGS="${CROSS_MAKEFLAGS}"; \
+    wget "https://ftp.gnu.org/pub/gnu/binutils/binutils-${BIN_VER}.tar.gz"; \
+    tar -xf binutils-${BIN_VER}.tar.gz; \
+    rm -rf binutils-${BIN_VER}.tar; \
+    mkdir build-binutils; \
+    cd build-binutils; \
+    ../binutils-${BIN_VER}/configure --target="${CROSS_TARGET}" --prefix="${CROSS_PREFIX}" --with-sysroot --disable-nls --disable-werror; \
+    make; \
+    make install-strip; \
+    cd /tmp; \
+    rm -rf ./*;
 # Build GCC
-WORKDIR /tmp/nobody/
-RUN	wget "https://ftp.gnu.org/gnu/gcc/gcc-${GCC_VER}/gcc-${GCC_VER}.tar.gz"
-RUN tar -xf gcc-${GCC_VER}.tar.gz
-RUN rm -rf gcc-${GCC_VER}.tar.gz
-RUN mkdir build-gcc
-WORKDIR /tmp/nobody/build-gcc
-RUN ../gcc-${GCC_VER}/configure --target=$TARGET --prefix="$PREFIX" --disable-nls --enable-languages=c,c++ --without-headers
-RUN make all-gcc
-RUN make all-target-libgcc
-RUN make install-gcc
-RUN make install-target-libgcc
-WORKDIR /tmp/nobody
-RUN rm -rf build-gcc
-RUN rm -rf gcc-${GCC_VER}
-# Build GDB
-WORKDIR /tmp/nobody/
-RUN	wget "https://ftp.gnu.org/gnu/gdb/gdb-${GDB_VER}.tar.gz"
-RUN tar -xf gdb-${GDB_VER}.tar.gz
-RUN rm -rf gdb-${GDB_VER}.tar.gz
-RUN mkdir build-gdb
-WORKDIR /tmp/nobody/build-gdb
-RUN ../gdb-${GDB_VER}/configure --target=$TARGET --prefix="$PREFIX"
-RUN make all-gdb
-RUN make install-gdb
-# Build echfs tools
-WORKDIR /tmp/nobody/
-RUN	git clone https://github.com/echfs/echfs.git
-WORKDIR /tmp/nobody/echfs
-RUN	make echfs-utils && make mkfs.echfs
-# Install echfs utilities
-USER root
-RUN cp /tmp/nobody/echfs/echfs-utils /usr/local/bin/
-RUN cp /tmp/nobody/echfs/mkfs.echfs /usr/local/bin/
-# Perform cleanup as root
-WORKDIR /tmp/
-RUN rm -rf nobody; \
-    find $ROOTFS/usr/bin -type f \( -perm -0100 \) -print | xargs file | sed -n '/executable .*not stripped/s/: TAB .*//p' | xargs -rt strip --strip-unneeded; \
-    find $ROOTFS/usr/lib -type f \( -perm -0100 \) -print | xargs file | sed -n '/executable .*not stripped/s/: TAB .*//p' | xargs -rt strip --strip-unneeded; \
-    pacman -Scc;
-# Update path to include new tools
-ENV PATH="$HOME/opt/cross/bin:$PATH"
-# Done.
+WORKDIR /tmp
+RUN export MAKEFLAGS="${CROSS_MAKEFLAGS}"; \
+    wget "https://ftp.gnu.org/gnu/gcc/gcc-${GCC_VER}/gcc-${GCC_VER}.tar.gz"; \
+    tar -xf gcc-${GCC_VER}.tar.gz; \
+    rm -rf gcc-${GCC_VER}.tar.gz; \
+    mkdir build-gcc; \
+    cd build-gcc; \
+    ../gcc-${GCC_VER}/configure --target="${CROSS_TARGET}" --prefix="${CROSS_PREFIX}" --disable-nls --enable-languages=c,c++ --without-headers; \
+    make all-gcc; \
+    make all-target-libgcc; \
+    make install-strip-gcc; \
+    make install-strip-target-libgcc; \
+    cd /tmp; \
+    rm -rf ./*;
+# Build echfs-utils
+WORKDIR /tmp
+RUN git clone https://github.com/echfs/echfs.git; \
+    cd echfs; \
+    make echfs-utils; \
+    make mkfs.echfs; \
+    cp echfs-utils /usr/local/bin/; \
+    cp mkfs.echfs /usr/local/bin/; \
+    make clean; \
+    cd /tmp; \
+    rm -rf ./*;
