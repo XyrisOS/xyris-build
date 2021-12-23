@@ -1,19 +1,16 @@
 FROM alpine:3.14
+LABEL org.opencontainers.image.description "Xyris build environment container"
 # Packages necessary to build the cross compiler
-ARG BUILD_PKGS="bison flex mpc1-dev gmp-dev mpfr-dev texinfo build-base util-linux-dev"
-# Packages necessary to build Xyris and docs
-ARG TOOLCHAIN_PKGS="make nasm scons doxygen graphviz"
-# Useful tools for debugging and image creation
-ARG OTHER_PKGS="git parted xorriso gdb-multiarch"
+ARG BUILD_PKGS="make wget bison flex mpc1-dev gmp-dev mpfr-dev texinfo build-base util-linux-dev"
 # Install packages
 RUN apk update; \
-    apk add --no-cache ${BUILD_PKGS} ${TOOLCHAIN_PKGS} ${OTHER_PKGS}
+    apk add --no-cache ${BUILD_PKGS}
 # Environment variables for cross compiler
 ENV BIN_VER="2.37"
 ENV GCC_VER="11.2.0"
 ENV CROSS_PREFIX="/opt/cross"
 ENV CROSS_TARGET="i686-elf"
-ENV CROSS_MAKEFLAGS="-j4"
+ENV CROSS_MAKEFLAGS="-j6"
 ENV PATH="$CROSS_PREFIX/bin:$PATH"
 # Build Binutils
 WORKDIR /tmp
@@ -43,14 +40,10 @@ RUN export MAKEFLAGS="${CROSS_MAKEFLAGS}"; \
     make install-strip-target-libgcc; \
     cd /tmp; \
     rm -rf ./*;
-# Build echfs-utils
-WORKDIR /tmp
-RUN git clone https://github.com/echfs/echfs.git; \
-    cd echfs; \
-    make echfs-utils; \
-    make mkfs.echfs; \
-    cp echfs-utils /usr/local/bin/; \
-    cp mkfs.echfs /usr/local/bin/; \
-    make clean; \
-    cd /tmp; \
-    rm -rf ./*;
+# Packages necessary to build Xyris and docs
+ARG TOOLCHAIN_PKGS="nasm scons doxygen graphviz curl"
+# Useful tools for debugging and image creation
+ARG OTHER_PKGS="git parted e2fsprogs e2tools xorriso gdb-multiarch"
+# Install packages
+RUN apk update; \
+    apk add --no-cache ${TOOLCHAIN_PKGS} ${OTHER_PKGS}
