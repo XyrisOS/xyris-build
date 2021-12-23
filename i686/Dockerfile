@@ -4,7 +4,7 @@ ARG BUILD_PKGS="bison flex mpc1-dev gmp-dev mpfr-dev texinfo build-base util-lin
 # Packages necessary to build Xyris and docs
 ARG TOOLCHAIN_PKGS="make nasm scons doxygen graphviz"
 # Useful tools for debugging and image creation
-ARG OTHER_PKGS="git parted xorriso gdb-multiarch"
+ARG OTHER_PKGS="git parted e2fsprogs e2tools xorriso gdb-multiarch"
 # Install packages
 RUN apk update; \
     apk add --no-cache ${BUILD_PKGS} ${TOOLCHAIN_PKGS} ${OTHER_PKGS}
