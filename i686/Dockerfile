@@ -41,7 +41,7 @@ RUN export MAKEFLAGS="${CROSS_MAKEFLAGS}"; \
     cd /tmp; \
     rm -rf ./*;
 # Packages necessary to build Xyris and docs
-ARG TOOLCHAIN_PKGS="nasm scons doxygen graphviz curl"
+ARG TOOLCHAIN_PKGS="nasm scons doxygen graphviz jq"
 # Useful tools for debugging and image creation
 ARG OTHER_PKGS="git parted e2fsprogs e2tools xorriso gdb-multiarch"
 # Install packages
