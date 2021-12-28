@@ -2,7 +2,7 @@ FROM alpine:3.14
 # Packages necessary to build the cross compiler
 ARG BUILD_PKGS="bison flex mpc1-dev gmp-dev mpfr-dev texinfo build-base util-linux-dev"
 # Packages necessary to build Xyris and docs
-ARG TOOLCHAIN_PKGS="make nasm scons doxygen graphviz"
+ARG TOOLCHAIN_PKGS="make nasm scons doxygen graphviz jq"
 # Useful tools for debugging and image creation
 ARG OTHER_PKGS="git parted xorriso gdb-multiarch"
 # Install packages
