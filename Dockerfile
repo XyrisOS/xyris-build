@@ -15,7 +15,7 @@ ENV PATH="$CROSS_PREFIX/bin:$PATH"
 WORKDIR /tmp
 RUN export MAKEFLAGS="${CROSS_MAKEFLAGS}"; \
     wget "https://ftp.gnu.org/pub/gnu/binutils/binutils-${BIN_VER}.tar.gz"; \
-    tar -xf binutils-${BIN_VER}.tar.gz; \
+    tar -xf "binutils-${BIN_VER}.tar.gz"; \
     for TARGET in "i686-elf" "mips64-elf"; do \
         echo "Building binutils for ${TARGET}"; \
         mkdir "build-binutils-${TARGET}"; \
@@ -23,15 +23,15 @@ RUN export MAKEFLAGS="${CROSS_MAKEFLAGS}"; \
         ../binutils-${BIN_VER}/configure --target="${TARGET}" --prefix="${CROSS_PREFIX}" --with-sysroot --disable-nls --disable-werror; \
         make; \
         make install-strip; \
-        make clean; \
         cd /tmp; \
+        rm -r "build-binutils-${TARGET}"; \
     done; \
-    rm -rf ./*;
+    rm "binutils-${BIN_VER}.tar.gz";
 # Build GCC
 WORKDIR /tmp
 RUN export MAKEFLAGS="${CROSS_MAKEFLAGS}"; \
     wget "https://ftp.gnu.org/gnu/gcc/gcc-${GCC_VER}/gcc-${GCC_VER}.tar.gz"; \
-    tar -xf gcc-${GCC_VER}.tar.gz; \
+    tar -xf "gcc-${GCC_VER}.tar.gz"; \
     for TARGET in "i686-elf" "mips64-elf"; do \
         echo "Building binutils for ${TARGET}"; \
         mkdir "build-gcc-${TARGET}"; \
@@ -41,10 +41,10 @@ RUN export MAKEFLAGS="${CROSS_MAKEFLAGS}"; \
         make all-target-libgcc; \
         make install-strip-gcc; \
         make install-strip-target-libgcc; \
-        make clean; \
         cd /tmp; \
+        rm -r "build-gcc-${TARGET}"; \
     done; \
-    rm -rf ./*;
+    rm "gcc-${GCC_VER}.tar.gz";
 # Packages necessary to build Xyris and docs
 ARG TOOLCHAIN_PKGS="nasm scons doxygen graphviz jq"
 # Useful tools for debugging and image creation
