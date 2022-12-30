@@ -16,7 +16,7 @@ WORKDIR /tmp
 RUN export MAKEFLAGS="${CROSS_MAKEFLAGS}"; \
     wget "https://ftp.gnu.org/pub/gnu/binutils/binutils-${BIN_VER}.tar.gz"; \
     tar -xf "binutils-${BIN_VER}.tar.gz"; \
-    for TARGET in "i686-elf" "x86_64-elf" "mips64-elf"; do \
+    for TARGET in "x86_64-elf" "mips64-elf"; do \
         echo "Building binutils for ${TARGET}"; \
         mkdir "build-binutils-${TARGET}"; \
         cd "build-binutils-${TARGET}"; \
@@ -32,7 +32,7 @@ WORKDIR /tmp
 RUN export MAKEFLAGS="${CROSS_MAKEFLAGS}"; \
     wget "https://ftp.gnu.org/gnu/gcc/gcc-${GCC_VER}/gcc-${GCC_VER}.tar.gz"; \
     tar -xf "gcc-${GCC_VER}.tar.gz"; \
-    for TARGET in "i686-elf" "x86_64-elf" "mips64-elf"; do \
+    for TARGET in "x86_64-elf" "mips64-elf"; do \
         echo "Building binutils for ${TARGET}"; \
         mkdir "build-gcc-${TARGET}"; \
         cd "build-gcc-${TARGET}"; \
