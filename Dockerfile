@@ -1,7 +1,7 @@
 FROM alpine:3.14
 LABEL org.opencontainers.image.description "Xyris build environment container"
 # Packages necessary to build the cross compiler
-ARG BUILD_PKGS="make wget bison flex mpc1-dev gmp-dev mpfr-dev texinfo build-base util-linux-dev"
+ARG BUILD_PKGS="wget bison flex mpc1-dev gmp-dev mpfr-dev texinfo build-base util-linux-dev"
 # Install packages
 RUN apk update; \
     apk add --no-cache ${BUILD_PKGS}
