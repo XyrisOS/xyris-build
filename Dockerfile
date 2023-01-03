@@ -1,7 +1,7 @@
 FROM alpine:3.14
 LABEL org.opencontainers.image.description "Xyris build environment container"
 # Packages necessary to build the cross compiler
-ARG BUILD_PKGS="make wget bison flex mpc1-dev gmp-dev mpfr-dev texinfo build-base util-linux-dev"
+ARG BUILD_PKGS="wget bison flex mpc1-dev gmp-dev mpfr-dev texinfo build-base util-linux-dev"
 # Install packages
 RUN apk update; \
     apk add --no-cache ${BUILD_PKGS}
@@ -16,7 +16,7 @@ WORKDIR /tmp
 RUN export MAKEFLAGS="${CROSS_MAKEFLAGS}"; \
     wget "https://ftp.gnu.org/pub/gnu/binutils/binutils-${BIN_VER}.tar.gz"; \
     tar -xf "binutils-${BIN_VER}.tar.gz"; \
-    for TARGET in "i686-elf" "mips64-elf"; do \
+    for TARGET in "x86_64-elf" "mips64-elf"; do \
         echo "Building binutils for ${TARGET}"; \
         mkdir "build-binutils-${TARGET}"; \
         cd "build-binutils-${TARGET}"; \
@@ -32,7 +32,7 @@ WORKDIR /tmp
 RUN export MAKEFLAGS="${CROSS_MAKEFLAGS}"; \
     wget "https://ftp.gnu.org/gnu/gcc/gcc-${GCC_VER}/gcc-${GCC_VER}.tar.gz"; \
     tar -xf "gcc-${GCC_VER}.tar.gz"; \
-    for TARGET in "i686-elf" "mips64-elf"; do \
+    for TARGET in "x86_64-elf" "mips64-elf"; do \
         echo "Building binutils for ${TARGET}"; \
         mkdir "build-gcc-${TARGET}"; \
         cd "build-gcc-${TARGET}"; \
